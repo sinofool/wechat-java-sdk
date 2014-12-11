@@ -20,14 +20,13 @@ import net.sinofool.wechat.mp.msg.ReplyXMLFormat;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class WeChatMP {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WeChatMP.class);
     private static final Random RAND = new Random(System.currentTimeMillis());
-    
+
     private final String appId;
     private final String token;
     // private final String aesKey;
@@ -192,7 +191,7 @@ public class WeChatMP {
     private static final String NONCE = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
     private String nonce() {
-        int length = RandomUtils.nextInt(5, 10);
+        int length = RAND.nextInt(5) + 5;
         char[] ret = new char[length];
         for (int i = 0; i < length; ++i) {
             ret[i] = NONCE.charAt(RAND.nextInt(NONCE.length()));
@@ -245,7 +244,8 @@ public class WeChatMP {
             int usefulLength = 20 + messageBytes.length + appIdBytes.length;
             int padLength = (usefulLength % 32 == 0) ? 32 : 32 - usefulLength % 32;
             byte[] buff = new byte[usefulLength + padLength];
-            byte[] rand = RandomUtils.nextBytes(16);
+            byte[] rand = new byte[16];
+            RAND.nextBytes(rand);
             for (int i = 0; i < 16; ++i) {
                 buff[i] = rand[i];
             }
