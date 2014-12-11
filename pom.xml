@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.sinofool</groupId>
-	<artifactId>wechat-java</artifactId>
+	<artifactId>wechat-java-sdk</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>WeChat open platform Java SDK</name>
@@ -36,7 +36,16 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 	<dependencies>
-		<!-- start logging dependencies -->
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.10</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.3.2</version>
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
@@ -69,8 +78,8 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
+					<source>1.6</source>
+					<target>1.6</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -78,8 +87,7 @@
 				<artifactId>findbugs-maven-plugin</artifactId>
 				<configuration>
 					<excludeFilterFile>findbugs-exclude.xml</excludeFilterFile>
-					<effort>Max</effort>
-					<threshold>Low</threshold>
+					<!-- <effort>Max</effort> <threshold>Low</threshold> -->
 					<xmlOutput>true</xmlOutput>
 				</configuration>
 				<executions>
@@ -97,7 +105,7 @@
 					<linkXref>true</linkXref>
 					<sourceEncoding>utf-8</sourceEncoding>
 					<minimumTokens>100</minimumTokens>
-					<targetJdk>1.5</targetJdk>
+					<targetJdk>1.6</targetJdk>
 				</configuration>
 				<executions>
 					<execution>

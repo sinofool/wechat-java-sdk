@@ -1,4 +1,4 @@
-package com.sinofool.wechat.mp;
+package net.sinofool.wechat.mp;
 
 import static org.junit.Assert.*;
 
