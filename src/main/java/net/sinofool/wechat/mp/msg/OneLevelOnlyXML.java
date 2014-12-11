@@ -9,6 +9,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import net.sinofool.wechat.mp.WeChatException;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -25,8 +27,12 @@ public class OneLevelOnlyXML implements ReplyXMLFormat {
             doc = builder.newDocument();
             root = doc.createElement(tag);
             doc.appendChild(root);
+        } catch (RuntimeException e) {
+            LOG.warn("Cannot create XML document:", e);
+            throw new WeChatException(e);
         } catch (Exception e) {
             LOG.warn("Cannot create XML document", e);
+            throw new WeChatException(e);
         }
     }
 
@@ -51,9 +57,12 @@ public class OneLevelOnlyXML implements ReplyXMLFormat {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             transformer.transform(new DOMSource(doc), new StreamResult(out));
             return out.toString("utf-8");
+        } catch (RuntimeException e) {
+            LOG.warn("Cannot serialize to XML:", e);
+            throw new WeChatException(e);
         } catch (Exception e) {
             LOG.warn("Cannot serialize to XML", e);
+            throw new WeChatException(e);
         }
-        return null;
     }
 }

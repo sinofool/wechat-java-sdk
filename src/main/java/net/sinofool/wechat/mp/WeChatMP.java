@@ -3,7 +3,7 @@ package net.sinofool.wechat.mp;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Random;
+import java.util.Base64;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -18,15 +18,11 @@ import net.sinofool.wechat.mp.msg.OneLevelOnlyXML;
 import net.sinofool.wechat.mp.msg.PushJSONFormat;
 import net.sinofool.wechat.mp.msg.ReplyXMLFormat;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class WeChatMP {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WeChatMP.class);
-    private static final Random RAND = new Random(System.currentTimeMillis());
-
     private final String appId;
     private final String token;
     // private final String aesKey;
@@ -44,7 +40,7 @@ public class WeChatMP {
         this.eventHandler = eventHandler;
 
         this.appIdBytes = appId.getBytes(Charset.forName("utf-8"));
-        this.aesKeyBytes = Base64.decodeBase64(aesKey + "=");
+        this.aesKeyBytes = Base64.getDecoder().decode(aesKey + "=");
     }
 
     /**
@@ -76,8 +72,12 @@ public class WeChatMP {
      *            From request query string 'msg_signature'
      * @param body
      *            From request body
-     * @return null if nothing to reply or something wrong. Application should
-     *         always return empty page.
+     * @return null if nothing to reply or something wrong. <br />
+     *         Application should always return empty page.
+     * @throws WeChatException
+     *             When there is underlying exception thrown, <br />
+     *             Application should response error if wants WeChat platform
+     *             retry, or response empty page to ignore.
      */
     public ReplyXMLFormat incomingMessage(final String signature, final int timestamp, final String nonce,
             final String encryptType, final String msgSignature, final String body) {
@@ -97,7 +97,7 @@ public class WeChatMP {
             return null;
         }
 
-        Message dec = decryptMPMessage(encMessage);
+        Message dec = Messages.parseIncoming(decryptMPMessage(encMessage));
         if (dec == null) {
             LOG.warn("Failed to decrypt message");
             return null;
@@ -107,13 +107,12 @@ public class WeChatMP {
             // This is normal situation, handler want.
             return null;
         }
-        String enc = encryptMPMessage(rpl);
+        String enc = encryptMPMessage(rpl.toReplyXMLString());
         if (enc == null) {
             LOG.warn("Failed to encrypt message");
             return null;
         }
-        int createTime = (int) (System.currentTimeMillis() / 1000L);
-        return packEncryptedEnvelope(enc, createTime, nonce());
+        return packAndSignEncryptedEnvelope(enc, WeChatUtils.now(), WeChatUtils.nonce());
     }
 
     private ReplyXMLFormat dispatch(Message dec) {
@@ -124,13 +123,13 @@ public class WeChatMP {
         }
     }
 
-    private ReplyXMLFormat packEncryptedEnvelope(String enc, int createTime, String newNonce) {
+    private ReplyXMLFormat packAndSignEncryptedEnvelope(String enc, int createTime, String nonce) {
         OneLevelOnlyXML xml = new OneLevelOnlyXML();
         xml.createRootElement("xml");
         xml.createChild("Encrypt", enc);
-        xml.createChild("MsgSignature", sign(createTime, newNonce, enc));
+        xml.createChild("MsgSignature", sign(createTime, nonce, enc));
         xml.createChild("TimeStamp", createTime);
-        xml.createChild("Nonce", newNonce);
+        xml.createChild("Nonce", nonce);
         return xml;
     }
 
@@ -145,9 +144,12 @@ public class WeChatMP {
             Element doc = root.getDocumentElement();
             encMessage = doc.getElementsByTagName("Encrypt").item(0).getTextContent();
             toUserName = doc.getElementsByTagName("ToUserName").item(0).getTextContent();
+        } catch (RuntimeException e) {
+            LOG.warn("Failed to parse XML:", e);
+            throw new WeChatException(e);
         } catch (Exception e) {
             LOG.warn("Failed to parse XML", e);
-            throw new WeChatException(e.getMessage());
+            throw new WeChatException(e);
         }
 
         if (!account.equals(toUserName)) {
@@ -175,7 +177,7 @@ public class WeChatMP {
     private boolean verify(final String signature, int timestamp, final String nonce) {
         String[] verify = new String[] { token, String.valueOf(timestamp), nonce };
         Arrays.sort(verify);
-        return signature.equals(DigestUtils.sha1Hex(verify[0] + verify[1] + verify[2]));
+        return signature.equals(WeChatUtils.sha1Hex(verify[0] + verify[1] + verify[2]));
     }
 
     private boolean verify(String signature, int timestamp, String nonce, String msg) {
@@ -185,29 +187,19 @@ public class WeChatMP {
     private String sign(int timestamp, String nonce, String msg) {
         String[] verify = new String[] { token, String.valueOf(timestamp), nonce, msg };
         Arrays.sort(verify);
-        return DigestUtils.sha1Hex(verify[0] + verify[1] + verify[2] + verify[3]);
+        return WeChatUtils.sha1Hex(verify[0] + verify[1] + verify[2] + verify[3]);
     }
 
-    private static final String NONCE = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
-    private String nonce() {
-        int length = RAND.nextInt(5) + 5;
-        char[] ret = new char[length];
-        for (int i = 0; i < length; ++i) {
-            ret[i] = NONCE.charAt(RAND.nextInt(NONCE.length()));
-        }
-        return new String(ret);
-    }
-
-    public Message decryptMPMessage(final String encMessage) {
+    public String decryptMPMessage(final String encMessage) {
         try {
             Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
             SecretKeySpec keySpec = new SecretKeySpec(aesKeyBytes, "AES");
             IvParameterSpec iv = new IvParameterSpec(aesKeyBytes, 0, 16);
             cipher.init(Cipher.DECRYPT_MODE, keySpec, iv);
-            byte[] aesMsg = Base64.decodeBase64(encMessage);
+            byte[] aesMsg = Base64.getDecoder().decode(encMessage);
             byte[] msg = cipher.doFinal(aesMsg);
-            int length = (msg[16] << 24) + (msg[17] << 16) + (msg[18] << 8) + msg[19];
+            int length = ((msg[16] & 0xFF) << 24) | ((msg[17] & 0xFF) << 16) | ((msg[18] & 0xFF) << 8)
+                    | (msg[19] & 0xFF);
             if (20 + length + appIdBytes.length + msg[msg.length - 1] != msg.length) {
                 LOG.warn("decrypt message length not match length={}, msg.length={}", length, msg.length);
                 return null;
@@ -219,53 +211,60 @@ public class WeChatMP {
                     return null;
                 }
             }
-            String xml = new String(msg, 20, length, Charset.forName("utf-8"));
-            return Messages.parseIncoming(xml);
+            return new String(msg, 20, length, Charset.forName("utf-8"));
+        } catch (RuntimeException e) {
+            LOG.warn("Failed to decrypt message:", e);
+            throw new WeChatException(e);
         } catch (Exception e) {
             LOG.warn("Failed to decrypt message", e);
-            throw new WeChatException(e.getMessage());
+            throw new WeChatException(e);
         }
     }
 
-    private void fillIntToByte(final byte[] buff, int pos, int value) {
-        buff[pos + 3] = (byte) (value & 0xFF);
-        buff[pos + 2] = (byte) ((value >> 8) & 0xFF);
-        buff[pos + 1] = (byte) ((value >> 16) & 0xFF);
-        buff[pos + 0] = (byte) ((value >> 24) & 0xFF);
-    }
-
-    public final String encryptMPMessage(final ReplyXMLFormat rpl) {
+    public final String encryptMPMessage(final String rpl) {
         try {
             Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
             SecretKeySpec keySpec = new SecretKeySpec(aesKeyBytes, "AES");
             IvParameterSpec iv = new IvParameterSpec(aesKeyBytes, 0, 16);
             cipher.init(Cipher.ENCRYPT_MODE, keySpec, iv);
-            byte[] messageBytes = rpl.toReplyXMLString().getBytes(Charset.forName("utf-8"));
+            byte[] messageBytes = rpl.getBytes(Charset.forName("utf-8"));
             int usefulLength = 20 + messageBytes.length + appIdBytes.length;
             int padLength = (usefulLength % 32 == 0) ? 32 : 32 - usefulLength % 32;
+
             byte[] buff = new byte[usefulLength + padLength];
+
             byte[] rand = new byte[16];
-            RAND.nextBytes(rand);
+            WeChatUtils.RAND.nextBytes(rand);
             for (int i = 0; i < 16; ++i) {
                 buff[i] = rand[i];
             }
-            fillIntToByte(buff, 16, messageBytes.length);
+
+            buff[19] = (byte) (messageBytes.length & 0xFF);
+            buff[18] = (byte) ((messageBytes.length >> 8) & 0xFF);
+            buff[17] = (byte) ((messageBytes.length >> 16) & 0xFF);
+            buff[16] = (byte) ((messageBytes.length >> 24) & 0xFF);
+
             for (int i = 0; i < messageBytes.length; ++i) {
                 buff[i + 20] = messageBytes[i];
             }
+
             for (int i = 0; i < appIdBytes.length; ++i) {
                 buff[i + 20 + messageBytes.length] = appIdBytes[i];
             }
+
             for (int i = 0; i < padLength; ++i) {
                 buff[i + usefulLength] = (byte) padLength;
             }
 
             byte[] msg = cipher.doFinal(buff);
-            String enc = Base64.encodeBase64String(msg);
+            String enc = Base64.getEncoder().encodeToString(msg);
             return enc;
+        } catch (RuntimeException e) {
+            LOG.warn("Failed to decrypt message:", e);
+            throw new WeChatException(e);
         } catch (Exception e) {
             LOG.warn("Failed to encrypt message", e);
-            throw new WeChatException(e.getMessage());
+            throw new WeChatException(e);
         }
     }
 }

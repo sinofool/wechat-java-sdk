@@ -8,6 +8,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import net.sinofool.wechat.mp.WeChatException;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -26,10 +28,13 @@ public class Messages {
             } else {
                 return null;
             }
+        } catch (RuntimeException e) {
+            LOG.warn("Failed to parse incoming message:", e);
+            throw new WeChatException(e);
         } catch (Exception e) {
             LOG.warn("Failed to parse incoming message", e);
+            throw new WeChatException(e);
         }
-        return null;
     }
 
     private static String e(Element root, String element) {
