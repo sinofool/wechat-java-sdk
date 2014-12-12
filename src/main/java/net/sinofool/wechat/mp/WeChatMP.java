@@ -17,34 +17,33 @@ import net.sinofool.wechat.mp.msg.Messages;
 import net.sinofool.wechat.mp.msg.OneLevelOnlyXML;
 import net.sinofool.wechat.mp.msg.PushJSONFormat;
 import net.sinofool.wechat.mp.msg.ReplyXMLFormat;
+import net.sinofool.wechat.thirdparty.org.json.JSONObject;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class WeChatMP {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WeChatMP.class);
-    private final String appId;
-    private final String token;
-    // private final String aesKey;
-    private final String account;
+    private final WeChatMPConfig config;
     private final WeChatMPEventHandler eventHandler;
-
+    private final WeChatMPHttpClient httpClient;
+    private final WeChatMPAccessTokenStorage atStorage;
     private final byte[] appIdBytes;
     private final byte[] aesKeyBytes;
 
-    public WeChatMP(String appId, String token, String aesKey, String account, WeChatMPEventHandler eventHandler) {
-        this.appId = appId;
-        this.token = token;
-        // this.aesKey = aesKey;
-        this.account = account;
+    public WeChatMP(WeChatMPConfig config, WeChatMPEventHandler eventHandler, WeChatMPHttpClient httpClient,
+            WeChatMPAccessTokenStorage atStorage) {
+        this.config = config;
         this.eventHandler = eventHandler;
+        this.httpClient = httpClient;
+        this.atStorage = atStorage;
 
-        this.appIdBytes = appId.getBytes(Charset.forName("utf-8"));
-        this.aesKeyBytes = Base64.getDecoder().decode(aesKey + "=");
+        this.appIdBytes = config.getAppId().getBytes(Charset.forName("utf-8"));
+        this.aesKeyBytes = Base64.getDecoder().decode(config.getAESKey() + "=");
     }
 
     /**
-     * Call this method when you have incoming validate request.<br />
+     * Call this method when you have incoming validate request.<br>
      * It is usually GET request for your endpoint.
      * 
      * @param signature
@@ -72,10 +71,10 @@ public class WeChatMP {
      *            From request query string 'msg_signature'
      * @param body
      *            From request body
-     * @return null if nothing to reply or something wrong. <br />
+     * @return null if nothing to reply or something wrong. <br>
      *         Application should always return empty page.
      * @throws WeChatException
-     *             When there is underlying exception thrown, <br />
+     *             When there is underlying exception thrown, <br>
      *             Application should response error if wants WeChat platform
      *             retry, or response empty page to ignore.
      */
@@ -152,8 +151,9 @@ public class WeChatMP {
             throw new WeChatException(e);
         }
 
-        if (!account.equals(toUserName)) {
-            LOG.warn("Failed to parse encrypted envelope, ToUserName expected={} not {}", account, toUserName);
+        if (!config.getOriginID().equals(toUserName)) {
+            LOG.warn("Failed to parse encrypted envelope, ToUserName expected={} not {}", config.getOriginID(),
+                    toUserName);
             return null;
         }
 
@@ -165,17 +165,38 @@ public class WeChatMP {
         return encMessage;
     }
 
+    public String getAccessToken() {
+        String token = atStorage.getAccessToken();
+        if (token == null) {
+            String ret = httpClient.get(
+                    "api.weixin.qq.com",
+                    443,
+                    "https",
+                    "/cgi-bin/token?grant_type=client_credential&appid=" + config.getAppId() + "&secret="
+                            + config.getAppSecret());
+            JSONObject json = new JSONObject(ret);
+            token = json.getString("access_token");
+            atStorage.setAccessToken(token, json.getInt("expires_in"));
+        }
+        return token;
+    }
+
     /**
      * Push message to WeChat platform.
      * 
      * @param message
      */
     public <T extends PushJSONFormat> void pushMessage(T message) {
-        // TODO
+        String ret = httpClient.post("api.weixin.qq.com", 443, "https", "/cgi-bin/message/custom/send?access_token="
+                + getAccessToken(), message.toPushJSONString());
+        JSONObject json = new JSONObject(ret);
+        if (json.getInt("errcode") != 0) {
+            throw new WeChatException(json.getString("errmsg"));
+        }
     }
 
     private boolean verify(final String signature, int timestamp, final String nonce) {
-        String[] verify = new String[] { token, String.valueOf(timestamp), nonce };
+        String[] verify = new String[] { config.getToken(), String.valueOf(timestamp), nonce };
         Arrays.sort(verify);
         return signature.equals(WeChatUtils.sha1Hex(verify[0] + verify[1] + verify[2]));
     }
@@ -185,12 +206,12 @@ public class WeChatMP {
     }
 
     private String sign(int timestamp, String nonce, String msg) {
-        String[] verify = new String[] { token, String.valueOf(timestamp), nonce, msg };
+        String[] verify = new String[] { config.getToken(), String.valueOf(timestamp), nonce, msg };
         Arrays.sort(verify);
         return WeChatUtils.sha1Hex(verify[0] + verify[1] + verify[2] + verify[3]);
     }
 
-    public String decryptMPMessage(final String encMessage) {
+    String decryptMPMessage(final String encMessage) {
         try {
             Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
             SecretKeySpec keySpec = new SecretKeySpec(aesKeyBytes, "AES");
@@ -206,8 +227,8 @@ public class WeChatMP {
             }
             for (int i = 0; i < appIdBytes.length; ++i) {
                 if (appIdBytes[i] != msg[20 + length + i]) {
-                    LOG.warn("decrypt message appid not match {} expected but {} in message", appId, new String(msg,
-                            20 + length, appIdBytes.length, Charset.forName("utf-8")));
+                    LOG.warn("decrypt message appid not match {} expected but {} in message", config.getAppId(),
+                            new String(msg, 20 + length, appIdBytes.length, Charset.forName("utf-8")));
                     return null;
                 }
             }
@@ -221,7 +242,7 @@ public class WeChatMP {
         }
     }
 
-    public final String encryptMPMessage(final String rpl) {
+    final String encryptMPMessage(final String rpl) {
         try {
             Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
             SecretKeySpec keySpec = new SecretKeySpec(aesKeyBytes, "AES");

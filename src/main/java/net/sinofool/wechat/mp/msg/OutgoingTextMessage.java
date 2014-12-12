@@ -1,5 +1,9 @@
 package net.sinofool.wechat.mp.msg;
 
+import java.io.StringWriter;
+
+import net.sinofool.wechat.thirdparty.org.json.JSONWriter;
+
 public class OutgoingTextMessage extends TextMessage implements ReplyXMLFormat, PushJSONFormat {
 
     @Override
@@ -16,8 +20,14 @@ public class OutgoingTextMessage extends TextMessage implements ReplyXMLFormat, 
 
     @Override
     public String toPushJSONString() {
-        // TODO Auto-generated method stub
-        return null;
+        StringWriter w = new StringWriter();
+        JSONWriter json = new JSONWriter(w);
+        json.object().key("touser").value(getToUserName());
+        json.key("msgtype").value(getType());
+        json.key("text").object();
+        json.key("content").value(getContent());
+        json.endObject().endObject();
+        return w.toString();
     }
 
 }

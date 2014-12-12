@@ -7,4 +7,8 @@ public class WeChatException extends RuntimeException {
     public WeChatException(Exception e) {
         super(e);
     }
+
+    public WeChatException(String reason) {
+        super(reason);
+    }
 }

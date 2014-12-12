@@ -42,6 +42,12 @@
 			<version>1.7.7</version>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.3.6</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
 			<version>1.7.7</version>
@@ -58,14 +64,24 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.2</version>
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.1</version>
+				<configuration>
+					<excludePackageNames>net.sinofool.wechat.thirdparty.*</excludePackageNames>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>findbugs-maven-plugin</artifactId>
+				<version>3.0.0</version>
 				<configuration>
 					<excludeFilterFile>findbugs-exclude.xml</excludeFilterFile>
 					<effort>Max</effort>
@@ -83,6 +99,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.3</version>
 				<configuration>
 					<linkXref>true</linkXref>
 					<sourceEncoding>utf-8</sourceEncoding>
@@ -96,6 +113,9 @@
 							<goal>check</goal>
 						</goals>
 						<configuration>
+							<excludes>
+								<exclude>/net/sinofool/wechat/thirdparty/**</exclude>
+							</excludes>
 							<excludeFromFailureFile>pmd-exclude.properties</excludeFromFailureFile>
 						</configuration>
 					</execution>

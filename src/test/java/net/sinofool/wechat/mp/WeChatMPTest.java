@@ -1,26 +1,23 @@
 package net.sinofool.wechat.mp;
 
 import static org.junit.Assert.*;
-import net.sinofool.wechat.mp.msg.IncomingTextMessage;
 import net.sinofool.wechat.mp.msg.OutgoingTextMessage;
-import net.sinofool.wechat.mp.msg.ReplyXMLFormat;
 
 import org.junit.Before;
 import org.junit.Test;
 
 public class WeChatMPTest {
-    private WeChatMP sdk;
-    private OutgoingTextMessage msg;
+    WeChatMP sdk;
+    OutgoingTextMessage msg;
+
+    TestingWeChatMPConfig config = new TestingWeChatMPConfig();
+    TestingWeChatMPEventHandler handler = new TestingWeChatMPEventHandler();
+    TestingWeChatMPHttpClient http = new TestingWeChatMPHttpClient();
+    TestingWeChatMPAccessTokenStorage store = new TestingWeChatMPAccessTokenStorage();
 
     @Before
     public void setUp() throws Exception {
-        sdk = new WeChatMP("fakeappid", "faketoken", "fake43byteaeskey1fake43byteaeskey2fake43byt", "fakeappsource",
-                new WeChatMPEventHandler() {
-                    @Override
-                    public ReplyXMLFormat handleText(IncomingTextMessage incoming) {
-                        return null;
-                    }
-                });
+        sdk = new WeChatMP(config, handler, http, store);
 
         msg = new OutgoingTextMessage();
         msg.setFromUserName("fakefrom");
