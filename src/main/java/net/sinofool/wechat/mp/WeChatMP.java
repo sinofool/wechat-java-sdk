@@ -3,11 +3,11 @@ package net.sinofool.wechat.mp;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Base64;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -39,7 +39,7 @@ public class WeChatMP {
         this.atStorage = atStorage;
 
         this.appIdBytes = config.getAppId().getBytes(Charset.forName("utf-8"));
-        this.aesKeyBytes = Base64.getDecoder().decode(config.getAESKey() + "=");
+        this.aesKeyBytes = DatatypeConverter.parseBase64Binary(config.getAESKey() + "=");
     }
 
     /**
@@ -191,7 +191,7 @@ public class WeChatMP {
                 + getAccessToken(), message.toPushJSONString());
         JSONObject json = new JSONObject(ret);
         if (json.getInt("errcode") != 0) {
-            throw new WeChatException(json.getString("errmsg"));
+            throw new WeChatException(json.getInt("errcode") + ":" + json.getString("errmsg"));
         }
     }
 
@@ -217,7 +217,7 @@ public class WeChatMP {
             SecretKeySpec keySpec = new SecretKeySpec(aesKeyBytes, "AES");
             IvParameterSpec iv = new IvParameterSpec(aesKeyBytes, 0, 16);
             cipher.init(Cipher.DECRYPT_MODE, keySpec, iv);
-            byte[] aesMsg = Base64.getDecoder().decode(encMessage);
+            byte[] aesMsg = DatatypeConverter.parseBase64Binary(encMessage);
             byte[] msg = cipher.doFinal(aesMsg);
             int length = ((msg[16] & 0xFF) << 24) | ((msg[17] & 0xFF) << 16) | ((msg[18] & 0xFF) << 8)
                     | (msg[19] & 0xFF);
@@ -278,7 +278,7 @@ public class WeChatMP {
             }
 
             byte[] msg = cipher.doFinal(buff);
-            String enc = Base64.getEncoder().encodeToString(msg);
+            String enc = DatatypeConverter.printBase64Binary(msg);
             return enc;
         } catch (RuntimeException e) {
             LOG.warn("Failed to decrypt message:", e);
