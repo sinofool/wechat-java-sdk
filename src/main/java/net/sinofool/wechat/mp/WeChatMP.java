@@ -1,6 +1,8 @@
 package net.sinofool.wechat.mp;
 
 import java.io.ByteArrayInputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
@@ -11,18 +13,27 @@ import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import net.sinofool.wechat.WeChatUserInfo;
 import net.sinofool.wechat.mp.msg.IncomingTextMessage;
 import net.sinofool.wechat.mp.msg.Message;
 import net.sinofool.wechat.mp.msg.Messages;
 import net.sinofool.wechat.mp.msg.OneLevelOnlyXML;
 import net.sinofool.wechat.mp.msg.PushJSONFormat;
 import net.sinofool.wechat.mp.msg.ReplyXMLFormat;
+import net.sinofool.wechat.thirdparty.org.json.JSONArray;
 import net.sinofool.wechat.thirdparty.org.json.JSONObject;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class WeChatMP {
+    public static final String WECHAT_MP_WEB_SCOPE_BASE = "snsapi_base";
+    public static final String WECHAT_MP_WEB_SCOPE_USERINFO = "snsapi_userinfo";
+
+    public static final String WECHAT_MP_WEB_LANG_ZHCN = "zh_CN";
+    public static final String WECHAT_MP_WEB_LANG_ZHTW = "zh_TW";
+    public static final String WECHAT_MP_WEB_LANG_EN = "en";
+
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WeChatMP.class);
     private final WeChatMPConfig config;
     private final WeChatMPEventHandler eventHandler;
@@ -287,5 +298,80 @@ public class WeChatMP {
             LOG.warn("Failed to encrypt message", e);
             throw new WeChatException(e);
         }
+    }
+
+    /**
+     * 微信公众号网页授权
+     * http://mp.weixin.qq.com/wiki/17/c0f37d5704f0b64713d5d2c37b468d75.html
+     * 
+     * @param redirectURI
+     *            需要确保域名已经加入到信任列表
+     * @param scope
+     *            请从WECHAT_MP_WEB_SCOPE_BASE和WECHAT_MP_WEB_SCOPE_USERINFO中选择
+     * @param state
+     * @return 需要引导用户跳转的地址
+     * @throws UnsupportedEncodingException
+     */
+    public String webpageAuthorize(final String redirectURI, final String scope, final String state)
+            throws UnsupportedEncodingException {
+        StringBuffer redirect = new StringBuffer();
+        redirect.append("https://open.weixin.qq.com/connect/oauth2/authorize?appid=");
+        redirect.append(config.getAppId());
+        redirect.append("&redirect_uri=");
+        redirect.append(URLEncoder.encode(redirectURI, "utf-8"));
+        redirect.append("&response_type=code&scope=");
+        redirect.append(scope);
+        redirect.append("&state=");
+        redirect.append(state);
+        redirect.append("#wechat_redirect");
+        return redirect.toString();
+    }
+
+    /**
+     * 
+     * @param code
+     * @param state
+     * @return OpenID for this user;
+     */
+    public String webpageAccessToken(final String code, final String state) {
+        String ret = httpClient.get("api.weixin.qq.com", 443, "https",
+                "/sns/oauth2/access_token?appid=" + config.getAppId() + "&secret=" + config.getAppSecret() + "&code="
+                        + code + "&grant_type=authorization_code");
+
+        JSONObject json = new JSONObject(ret);
+        String accessToken = json.getString("access_token");
+        int expire = json.getInt("expires_in");
+        String refreshToken = json.getString("refresh_token");
+        String openId = json.getString("openid");
+        String scope = json.getString("scope");
+        atStorage.setWebpageAccessToken(openId, scope, accessToken, expire);
+        atStorage.setWebpageRefreshToken(openId, scope, refreshToken);
+
+        return openId;
+    }
+
+    public WeChatUserInfo webpageUserInfo(final String openId, final String lang) {
+        String accessToken = atStorage.getWebpageAccessToken(openId, WECHAT_MP_WEB_SCOPE_USERINFO);
+        // TODO try refresh once if expired.
+
+        String ret = httpClient.get("api.weixin.qq.com", 443, "https", "/sns/userinfo?access_token=" + accessToken
+                + "&openid=" + openId + "&lang=" + lang);
+
+        WeChatUserInfo user = new WeChatUserInfo();
+        user.setOpenId(openId);
+
+        JSONObject json = new JSONObject(ret);
+        user.setNickname(WeChatUtils.getJSONString(json, "nickname"));
+        user.setSex(WeChatUtils.getJSONInt(json, "sex"));
+        user.setProvince(WeChatUtils.getJSONString(json, "province"));
+        user.setCity(WeChatUtils.getJSONString(json, "city"));
+        user.setCountry(WeChatUtils.getJSONString(json, "country"));
+        user.setHeadimgurl(WeChatUtils.getJSONString(json, "headimgurl"));
+        JSONArray privs = json.getJSONArray("privilege");
+        for (int i = 0; i < privs.length(); ++i) {
+            user.addPrivilege(privs.getString(i));
+        }
+        user.setUnionid(WeChatUtils.getJSONString(json, "unionid"));
+        return user;
     }
 }

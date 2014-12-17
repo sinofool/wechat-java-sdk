@@ -5,6 +5,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
+import net.sinofool.wechat.thirdparty.org.json.JSONException;
+import net.sinofool.wechat.thirdparty.org.json.JSONObject;
+
 public class WeChatUtils {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WeChatUtils.class);
 
@@ -50,4 +53,22 @@ public class WeChatUtils {
         }
         return new String(ret);
     }
+
+    // JSON
+    public static String getJSONString(JSONObject obj, String key) {
+        try {
+            return obj.getString(key);
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    public static int getJSONInt(JSONObject obj, String key) {
+        try {
+            return obj.getInt(key);
+        } catch (JSONException e) {
+            return 0;
+        }
+    }
+
 }
