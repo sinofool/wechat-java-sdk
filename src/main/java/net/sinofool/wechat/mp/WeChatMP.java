@@ -50,7 +50,15 @@ public class WeChatMP {
         this.atStorage = atStorage;
 
         this.appIdBytes = config.getAppId().getBytes(Charset.forName("utf-8"));
-        this.aesKeyBytes = DatatypeConverter.parseBase64Binary(config.getAESKey() + "=");
+        if (config.getAESKey() != null) {
+            this.aesKeyBytes = DatatypeConverter.parseBase64Binary(config.getAESKey() + "=");
+        } else {
+            this.aesKeyBytes = null;
+        }
+    }
+
+    public boolean isEncrypted() {
+        return this.aesKeyBytes != null;
     }
 
     /**
@@ -89,22 +97,27 @@ public class WeChatMP {
      *             Application should response error if wants WeChat platform
      *             retry, or response empty page to ignore.
      */
-    public ReplyXMLFormat incomingMessage(final String signature, final int timestamp, final String nonce,
+    public String incomingMessage(final String signature, final int timestamp, final String nonce,
             final String encryptType, final String msgSignature, final String body) {
         if (!verify(signature, timestamp, nonce)) {
             LOG.warn("Failed while verify signature of request query");
             return null;
         }
 
-        if (!encryptType.equals("aes")) {
-            LOG.warn("Supoort only encrypted account, please contact support for migration");
-            return null;
-        }
+        String encMessage;
+        if (isEncrypted()) {
+            if (!encryptType.equals("aes")) {
+                LOG.warn("Supoort only encrypted account, please contact support for migration");
+                return null;
+            }
 
-        String encMessage = verifyAndExtractEncryptedEnvelope(timestamp, nonce, msgSignature, body);
-        if (encMessage == null) {
-            LOG.warn("Failed to extract encrypted envelope");
-            return null;
+            encMessage = verifyAndExtractEncryptedEnvelope(timestamp, nonce, msgSignature, body);
+            if (encMessage == null) {
+                LOG.warn("Failed to extract encrypted envelope");
+                return null;
+            }
+        } else {
+            encMessage = body;
         }
 
         Message dec = Messages.parseIncoming(decryptMPMessage(encMessage));
@@ -117,12 +130,16 @@ public class WeChatMP {
             // This is normal situation, handler want.
             return null;
         }
-        String enc = encryptMPMessage(rpl.toReplyXMLString());
-        if (enc == null) {
-            LOG.warn("Failed to encrypt message");
-            return null;
+        if (isEncrypted()) {
+            String enc = encryptMPMessage(rpl.toReplyXMLString());
+            if (enc == null) {
+                LOG.warn("Failed to encrypt message");
+                return null;
+            }
+            return packAndSignEncryptedEnvelope(enc, WeChatUtils.now(), WeChatUtils.nonce());
+        } else {
+            return rpl.toReplyXMLString();
         }
-        return packAndSignEncryptedEnvelope(enc, WeChatUtils.now(), WeChatUtils.nonce());
     }
 
     private ReplyXMLFormat dispatch(Message dec) {
@@ -133,14 +150,14 @@ public class WeChatMP {
         }
     }
 
-    private ReplyXMLFormat packAndSignEncryptedEnvelope(String enc, int createTime, String nonce) {
+    private String packAndSignEncryptedEnvelope(String enc, int createTime, String nonce) {
         OneLevelOnlyXML xml = new OneLevelOnlyXML();
         xml.createRootElement("xml");
         xml.createChild("Encrypt", enc);
         xml.createChild("MsgSignature", sign(createTime, nonce, enc));
         xml.createChild("TimeStamp", createTime);
         xml.createChild("Nonce", nonce);
-        return xml;
+        return xml.toReplyXMLString();
     }
 
     private String verifyAndExtractEncryptedEnvelope(final int timestamp, final String nonce,
@@ -192,6 +209,13 @@ public class WeChatMP {
         return token;
     }
 
+    public WeChatUserInfo getUserInfo(final String openid) {
+        String ret = httpClient.get("api.weixin.qq.com", 443, "https", "/cgi-bin/user/info?access_token="
+                + getAccessToken() + "&openid=" + openid);
+        System.out.println("FROM:USER:" + openid + "\t" + ret);
+        return parseWeChatUser(ret);
+    }
+
     /**
      * Push message to WeChat platform.
      * 
@@ -222,7 +246,7 @@ public class WeChatMP {
         return WeChatUtils.sha1Hex(verify[0] + verify[1] + verify[2] + verify[3]);
     }
 
-    String decryptMPMessage(final String encMessage) {
+    final String decryptMPMessage(final String encMessage) {
         try {
             Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding");
             SecretKeySpec keySpec = new SecretKeySpec(aesKeyBytes, "AES");
@@ -357,19 +381,24 @@ public class WeChatMP {
         String ret = httpClient.get("api.weixin.qq.com", 443, "https", "/sns/userinfo?access_token=" + accessToken
                 + "&openid=" + openId + "&lang=" + lang);
 
-        WeChatUserInfo user = new WeChatUserInfo();
-        user.setOpenId(openId);
+        return parseWeChatUser(ret);
+    }
 
+    private WeChatUserInfo parseWeChatUser(String ret) {
+        WeChatUserInfo user = new WeChatUserInfo();
         JSONObject json = new JSONObject(ret);
+        user.setOpenId(WeChatUtils.getJSONString(json, "openid"));
         user.setNickname(WeChatUtils.getJSONString(json, "nickname"));
         user.setSex(WeChatUtils.getJSONInt(json, "sex"));
         user.setProvince(WeChatUtils.getJSONString(json, "province"));
         user.setCity(WeChatUtils.getJSONString(json, "city"));
         user.setCountry(WeChatUtils.getJSONString(json, "country"));
         user.setHeadimgurl(WeChatUtils.getJSONString(json, "headimgurl"));
-        JSONArray privs = json.getJSONArray("privilege");
-        for (int i = 0; i < privs.length(); ++i) {
-            user.addPrivilege(privs.getString(i));
+        JSONArray privs = WeChatUtils.getJSONArray(json, "privilege");
+        if (privs != null) {
+            for (int i = 0; i < privs.length(); ++i) {
+                user.addPrivilege(privs.getString(i));
+            }
         }
         user.setUnionid(WeChatUtils.getJSONString(json, "unionid"));
         return user;

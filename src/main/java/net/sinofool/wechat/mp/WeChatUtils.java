@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
+import net.sinofool.wechat.thirdparty.org.json.JSONArray;
 import net.sinofool.wechat.thirdparty.org.json.JSONException;
 import net.sinofool.wechat.thirdparty.org.json.JSONObject;
 
@@ -71,4 +72,11 @@ public class WeChatUtils {
         }
     }
 
+    public static JSONArray getJSONArray(JSONObject obj, String key) {
+        try {
+            return obj.getJSONArray(key);
+        } catch (JSONException e) {
+            return null;
+        }
+    }
 }

@@ -96,6 +96,10 @@ public class WeChatUserInfo {
         return headimgurl.substring(0, pos) + size;
     }
 
+    public String getHeadimgurl() {
+        return getHeadimgurl(0);
+    }
+
     public String getHeadimgurl(int size) {
         switch (size) {
         case 0:
