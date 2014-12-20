@@ -212,7 +212,6 @@ public class WeChatMP {
     public WeChatUserInfo getUserInfo(final String openid) {
         String ret = httpClient.get("api.weixin.qq.com", 443, "https", "/cgi-bin/user/info?access_token="
                 + getAccessToken() + "&openid=" + openid);
-        System.out.println("FROM:USER:" + openid + "\t" + ret);
         return parseWeChatUser(ret);
     }
 
@@ -357,7 +356,7 @@ public class WeChatMP {
      * @param state
      * @return OpenID for this user;
      */
-    public String webpageAccessToken(final String code, final String state) {
+    public String webpageProcessCallback(final String code, final String state) {
         String ret = httpClient.get("api.weixin.qq.com", 443, "https",
                 "/sns/oauth2/access_token?appid=" + config.getAppId() + "&secret=" + config.getAppSecret() + "&code="
                         + code + "&grant_type=authorization_code");
