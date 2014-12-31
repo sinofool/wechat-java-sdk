@@ -25,6 +25,8 @@ public class Messages {
             String type = root.getElementsByTagName("MsgType").item(0).getTextContent();
             if ("text".equals(type)) {
                 return handleText(root);
+            } else if ("event".equals(type)) {
+                return handleEvent(root);
             } else {
                 return null;
             }
@@ -35,6 +37,71 @@ public class Messages {
             LOG.warn("Failed to parse incoming message", e);
             throw new WeChatException(e);
         }
+    }
+
+    private static Message handleEvent(Element root) {
+        String event = e(root, "Event");
+        switch (event) {
+        case "subscribe":
+            if (root.getElementsByTagName("EventKey").getLength() == 0) {
+                IncomingSubscribeWithScanEventMessage msg = new IncomingSubscribeWithScanEventMessage();
+                msg.setFromUserName(e(root, "FromUserName"));
+                msg.setToUserName(e(root, "ToUserName"));
+                msg.setCreateTime(Integer.parseInt(e(root, "CreateTime")));
+                msg.setEvent(event);
+                msg.setEventKey(e(root, "EventKey"));
+                msg.setTicket(e(root, "Ticket"));
+                return msg;
+            }
+        case "unsubscribe": {
+            IncomingSubscribeEventMessage msg = new IncomingSubscribeEventMessage();
+            msg.setFromUserName(e(root, "FromUserName"));
+            msg.setToUserName(e(root, "ToUserName"));
+            msg.setCreateTime(Integer.parseInt(e(root, "CreateTime")));
+            msg.setEvent(event);
+            return msg;
+        }
+        case "SCAN": {
+            IncomingScanEventMessage msg = new IncomingSubscribeWithScanEventMessage();
+            msg.setFromUserName(e(root, "FromUserName"));
+            msg.setToUserName(e(root, "ToUserName"));
+            msg.setCreateTime(Integer.parseInt(e(root, "CreateTime")));
+            msg.setEvent(event);
+            msg.setEventKey(e(root, "EventKey"));
+            msg.setTicket(e(root, "Ticket"));
+            return msg;
+        }
+        case "LOCATION": {
+            IncomingLocationEventMessage msg = new IncomingLocationEventMessage();
+            msg.setFromUserName(e(root, "FromUserName"));
+            msg.setToUserName(e(root, "ToUserName"));
+            msg.setCreateTime(Integer.parseInt(e(root, "CreateTime")));
+            msg.setEvent(event);
+            msg.setLatitude(Double.parseDouble(e(root, "Latitude")));
+            msg.setLongitude(Double.parseDouble(e(root, "Longitude")));
+            msg.setPrecision(Double.parseDouble(e(root, "Precision")));
+            return msg;
+        }
+        case "CLICK": {
+            IncomingClickEventMessage msg = new IncomingClickEventMessage();
+            msg.setFromUserName(e(root, "FromUserName"));
+            msg.setToUserName(e(root, "ToUserName"));
+            msg.setCreateTime(Integer.parseInt(e(root, "CreateTime")));
+            msg.setEvent(event);
+            msg.setEventKey(e(root, "EventKey"));
+            return msg;
+        }
+        case "VIEW": {
+            IncomingViewEventMessage msg = new IncomingViewEventMessage();
+            msg.setFromUserName(e(root, "FromUserName"));
+            msg.setToUserName(e(root, "ToUserName"));
+            msg.setCreateTime(Integer.parseInt(e(root, "CreateTime")));
+            msg.setEvent(event);
+            msg.setEventKey(e(root, "EventKey"));
+            return msg;
+        }
+        }
+        return null;
     }
 
     private static String e(Element root, String element) {

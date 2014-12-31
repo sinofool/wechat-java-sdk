@@ -13,7 +13,7 @@ public class OutgoingTextMessage extends TextMessage implements ReplyXMLFormat, 
         xml.createChild("ToUserName", getToUserName());
         xml.createChild("FromUserName", getFromUserName());
         xml.createChild("CreateTime", getCreateTime());
-        xml.createChild("MsgType", getType());
+        xml.createChild("MsgType", getMsgType());
         xml.createChild("Content", getContent());
         return xml.toReplyXMLString();
     }
@@ -23,7 +23,7 @@ public class OutgoingTextMessage extends TextMessage implements ReplyXMLFormat, 
         StringWriter w = new StringWriter();
         JSONWriter json = new JSONWriter(w);
         json.object().key("touser").value(getToUserName());
-        json.key("msgtype").value(getType());
+        json.key("msgtype").value(getMsgType());
         json.key("text").object();
         json.key("content").value(getContent());
         json.endObject().endObject();

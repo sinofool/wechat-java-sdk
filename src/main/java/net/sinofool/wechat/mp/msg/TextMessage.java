@@ -7,7 +7,7 @@ public abstract class TextMessage implements Message {
     private String content;
 
     @Override
-    public String getType() {
+    public String getMsgType() {
         return "text";
     }
 

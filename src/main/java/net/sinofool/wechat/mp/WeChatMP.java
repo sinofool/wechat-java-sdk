@@ -14,7 +14,13 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import net.sinofool.wechat.WeChatUserInfo;
+import net.sinofool.wechat.mp.msg.IncomingClickEventMessage;
+import net.sinofool.wechat.mp.msg.IncomingLocationEventMessage;
+import net.sinofool.wechat.mp.msg.IncomingScanEventMessage;
+import net.sinofool.wechat.mp.msg.IncomingSubscribeEventMessage;
+import net.sinofool.wechat.mp.msg.IncomingSubscribeWithScanEventMessage;
 import net.sinofool.wechat.mp.msg.IncomingTextMessage;
+import net.sinofool.wechat.mp.msg.IncomingViewEventMessage;
 import net.sinofool.wechat.mp.msg.Message;
 import net.sinofool.wechat.mp.msg.Messages;
 import net.sinofool.wechat.mp.msg.OneLevelOnlyXML;
@@ -144,7 +150,19 @@ public class WeChatMP {
 
     private ReplyXMLFormat dispatch(Message dec) {
         if (dec instanceof IncomingTextMessage) {
-            return eventHandler.handleText((IncomingTextMessage) dec);
+            return eventHandler.handle((IncomingTextMessage) dec);
+        } else if (dec instanceof IncomingSubscribeEventMessage) {
+            return eventHandler.handle((IncomingSubscribeEventMessage) dec);
+        } else if (dec instanceof IncomingSubscribeWithScanEventMessage) {
+            return eventHandler.handle((IncomingSubscribeWithScanEventMessage) dec);
+        } else if (dec instanceof IncomingScanEventMessage) {
+            return eventHandler.handle((IncomingScanEventMessage) dec);
+        } else if (dec instanceof IncomingLocationEventMessage) {
+            return eventHandler.handle((IncomingLocationEventMessage) dec);
+        } else if (dec instanceof IncomingClickEventMessage) {
+            return eventHandler.handle((IncomingClickEventMessage) dec);
+        } else if (dec instanceof IncomingViewEventMessage) {
+            return eventHandler.handle((IncomingViewEventMessage) dec);
         } else {
             return null;
         }
