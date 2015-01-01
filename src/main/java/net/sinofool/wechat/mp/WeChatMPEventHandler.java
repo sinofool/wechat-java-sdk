@@ -10,6 +10,8 @@ import net.sinofool.wechat.mp.msg.IncomingViewEventMessage;
 import net.sinofool.wechat.mp.msg.ReplyXMLFormat;
 
 public interface WeChatMPEventHandler {
+    void setWeChatMP(WeChatMP mpSDK);
+
     ReplyXMLFormat handle(final IncomingTextMessage incoming);
 
     ReplyXMLFormat handle(final IncomingSubscribeEventMessage incoming);

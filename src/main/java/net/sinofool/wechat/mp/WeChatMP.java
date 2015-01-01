@@ -61,6 +61,7 @@ public class WeChatMP {
         } else {
             this.aesKeyBytes = null;
         }
+        eventHandler.setWeChatMP(this);
     }
 
     public boolean isEncrypted() {

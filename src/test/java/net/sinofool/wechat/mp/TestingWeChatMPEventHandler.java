@@ -51,4 +51,10 @@ final class TestingWeChatMPEventHandler implements WeChatMPEventHandler {
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public void setWeChatMP(WeChatMP mpSDK) {
+        // TODO Auto-generated method stub
+        
+    }
 }
