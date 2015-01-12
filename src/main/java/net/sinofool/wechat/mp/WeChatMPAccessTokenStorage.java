@@ -12,4 +12,8 @@ public interface WeChatMPAccessTokenStorage {
     void setWebpageRefreshToken(String openId, String scope, String token);
 
     String getWebpageRefreshToken(String openId, String scope);
+    
+    void setJSAPITicket(String ticket, int expire);
+    
+    String getJSAPITicket();
 }

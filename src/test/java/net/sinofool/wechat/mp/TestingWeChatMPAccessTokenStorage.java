@@ -70,4 +70,16 @@ final class TestingWeChatMPAccessTokenStorage implements WeChatMPAccessTokenStor
         }
         return webpageRefreshTokens.get(openId).get(scope);
     }
+
+    @Override
+    public void setJSAPITicket(String ticket, int expire) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public String getJSAPITicket() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

@@ -13,6 +13,7 @@ import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import net.sinofool.wechat.WeChatJSAPIConfig;
 import net.sinofool.wechat.WeChatUserInfo;
 import net.sinofool.wechat.mp.msg.IncomingClickEventMessage;
 import net.sinofool.wechat.mp.msg.IncomingLocationEventMessage;
@@ -118,7 +119,7 @@ public class WeChatMP {
                 return null;
             }
 
-            encMessage = verifyAndExtractEncryptedEnvelope(timestamp, nonce, msgSignature, body);
+            encMessage = decryptMPMessage(verifyAndExtractEncryptedEnvelope(timestamp, nonce, msgSignature, body));
             if (encMessage == null) {
                 LOG.warn("Failed to extract encrypted envelope");
                 return null;
@@ -127,7 +128,7 @@ public class WeChatMP {
             encMessage = body;
         }
 
-        Message dec = Messages.parseIncoming(decryptMPMessage(encMessage));
+        Message dec = Messages.parseIncoming(encMessage);
         if (dec == null) {
             LOG.warn("Failed to decrypt message");
             return null;
@@ -420,5 +421,32 @@ public class WeChatMP {
         }
         user.setUnionid(WeChatUtils.getJSONString(json, "unionid"));
         return user;
+    }
+
+    public String getJSAPITicket() {
+        String ticket = atStorage.getJSAPITicket();
+        if (ticket == null) {
+            String ret = httpClient.get("api.weixin.qq.com", 443, "https", "/cgi-bin/ticket/getticket?access_token="
+                    + getAccessToken() + "&type=jsapi");
+            JSONObject json = new JSONObject(ret);
+            ticket = json.getString("ticket");
+            atStorage.setJSAPITicket(ticket, json.getInt("expires_in"));
+        }
+        return ticket;
+    }
+
+    public WeChatJSAPIConfig getJSAPIConfig(final String url) {
+        String ticket = getJSAPITicket();
+        String nonce = WeChatUtils.nonce();
+        int timestamp = WeChatUtils.now();
+        String signature = WeChatUtils.sha1Hex("jsapi_ticket=" + ticket + "&noncestr=" + nonce + "&timestamp="
+                + timestamp + "&url=" + url);
+
+        WeChatJSAPIConfig ret = new WeChatJSAPIConfig();
+        ret.setAppId(config.getAppId());
+        ret.setNonce(nonce);
+        ret.setTimestamp(timestamp);
+        ret.setSignature(signature);
+        return ret;
     }
 }
