@@ -1,4 +1,4 @@
-package net.sinofool.wechat.mp.msg;
+package net.sinofool.wechat.base;
 
 import java.io.ByteArrayOutputStream;
 
@@ -9,12 +9,12 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import net.sinofool.wechat.mp.WeChatException;
+import net.sinofool.wechat.WeChatException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class OneLevelOnlyXML implements ReplyXMLFormat {
+public class OneLevelOnlyXML {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(OneLevelOnlyXML.class);
 
     private Document doc;
@@ -49,8 +49,7 @@ public class OneLevelOnlyXML implements ReplyXMLFormat {
         createChild(tag, String.valueOf(value));
     }
 
-    @Override
-    public String toReplyXMLString() {
+    public String toXMLString() {
         try {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();

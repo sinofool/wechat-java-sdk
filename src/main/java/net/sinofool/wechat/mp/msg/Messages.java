@@ -8,7 +8,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import net.sinofool.wechat.mp.WeChatException;
+import net.sinofool.wechat.WeChatException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

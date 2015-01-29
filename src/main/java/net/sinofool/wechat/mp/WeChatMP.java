@@ -13,8 +13,10 @@ import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import net.sinofool.wechat.WeChatException;
 import net.sinofool.wechat.WeChatJSAPIConfig;
 import net.sinofool.wechat.WeChatUserInfo;
+import net.sinofool.wechat.base.OneLevelOnlyXML;
 import net.sinofool.wechat.mp.msg.IncomingClickEventMessage;
 import net.sinofool.wechat.mp.msg.IncomingLocationEventMessage;
 import net.sinofool.wechat.mp.msg.IncomingScanEventMessage;
@@ -24,7 +26,6 @@ import net.sinofool.wechat.mp.msg.IncomingTextMessage;
 import net.sinofool.wechat.mp.msg.IncomingViewEventMessage;
 import net.sinofool.wechat.mp.msg.Message;
 import net.sinofool.wechat.mp.msg.Messages;
-import net.sinofool.wechat.mp.msg.OneLevelOnlyXML;
 import net.sinofool.wechat.mp.msg.PushJSONFormat;
 import net.sinofool.wechat.mp.msg.ReplyXMLFormat;
 import net.sinofool.wechat.thirdparty.org.json.JSONArray;
@@ -62,7 +63,9 @@ public class WeChatMP {
         } else {
             this.aesKeyBytes = null;
         }
-        eventHandler.setWeChatMP(this);
+        if (null != eventHandler) {
+            eventHandler.setWeChatMP(this);
+        }
     }
 
     public boolean isEncrypted() {
@@ -177,7 +180,7 @@ public class WeChatMP {
         xml.createChild("MsgSignature", sign(createTime, nonce, enc));
         xml.createChild("TimeStamp", createTime);
         xml.createChild("Nonce", nonce);
-        return xml.toReplyXMLString();
+        return xml.toXMLString();
     }
 
     private String verifyAndExtractEncryptedEnvelope(final int timestamp, final String nonce,

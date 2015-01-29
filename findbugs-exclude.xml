@@ -2,4 +2,9 @@
 	<Match>
 		<Package name="~^net\.sinofool\.wechat\.thirdparty\..*" />
 	</Match>
+	<Match>
+		<Class name="net.sinofool.wechat.pay.WeChatPayResponseData" />
+		<Method name="getBoolean" />
+		<Bug pattern="NP_BOOLEAN_RETURN_NULL" />
+	</Match>
 </FindBugsFilter>

@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 
+import net.sinofool.wechat.WeChatException;
 import net.sinofool.wechat.thirdparty.org.json.JSONArray;
 import net.sinofool.wechat.thirdparty.org.json.JSONException;
 import net.sinofool.wechat.thirdparty.org.json.JSONObject;
@@ -20,7 +21,7 @@ public class WeChatUtils {
         return (int) (System.currentTimeMillis() / 1000L);
     }
 
-    // SHA1 digest
+    // Digest
     private static final char[] DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
             'f' };
 
@@ -43,6 +44,16 @@ public class WeChatUtils {
         }
     }
 
+    public static String md5Hex(String input) {
+        try {
+            byte[] digest = MessageDigest.getInstance("MD5").digest(input.getBytes(Charset.forName("utf-8")));
+            return hex(digest);
+        } catch (NoSuchAlgorithmException e) {
+            LOG.warn("Cannot find MD5 digest algorithm", e);
+            throw new WeChatException(e);
+        }
+    }
+    
     // Nonce generation
     private static final String NONCE = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 

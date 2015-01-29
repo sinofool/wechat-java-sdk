@@ -8,9 +8,11 @@ import net.sinofool.wechat.mp.msg.IncomingSubscribeWithScanEventMessage;
 import net.sinofool.wechat.mp.msg.IncomingTextMessage;
 import net.sinofool.wechat.mp.msg.IncomingViewEventMessage;
 import net.sinofool.wechat.mp.msg.ReplyXMLFormat;
+import net.sinofool.wechat.pay.WeChatPay;
 
 public interface WeChatMPEventHandler {
     void setWeChatMP(WeChatMP mpSDK);
+    void setWeChatPay(WeChatPay paySDK);
 
     ReplyXMLFormat handle(final IncomingTextMessage incoming);
 

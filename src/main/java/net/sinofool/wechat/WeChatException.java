@@ -1,4 +1,4 @@
-package net.sinofool.wechat.mp;
+package net.sinofool.wechat;
 
 public class WeChatException extends RuntimeException {
 

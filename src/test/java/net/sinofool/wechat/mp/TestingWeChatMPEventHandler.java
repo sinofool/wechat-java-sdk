@@ -8,6 +8,7 @@ import net.sinofool.wechat.mp.msg.IncomingSubscribeWithScanEventMessage;
 import net.sinofool.wechat.mp.msg.IncomingTextMessage;
 import net.sinofool.wechat.mp.msg.IncomingViewEventMessage;
 import net.sinofool.wechat.mp.msg.ReplyXMLFormat;
+import net.sinofool.wechat.pay.WeChatPay;
 
 final class TestingWeChatMPEventHandler implements WeChatMPEventHandler {
     @Override
@@ -54,6 +55,12 @@ final class TestingWeChatMPEventHandler implements WeChatMPEventHandler {
 
     @Override
     public void setWeChatMP(WeChatMP mpSDK) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void setWeChatPay(WeChatPay paySDK) {
         // TODO Auto-generated method stub
         
     }

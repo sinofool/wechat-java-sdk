@@ -2,6 +2,7 @@ package net.sinofool.wechat.mp.msg;
 
 import java.io.StringWriter;
 
+import net.sinofool.wechat.base.OneLevelOnlyXML;
 import net.sinofool.wechat.thirdparty.org.json.JSONWriter;
 
 public class OutgoingTextMessage extends TextMessage implements ReplyXMLFormat, PushJSONFormat {
@@ -15,7 +16,7 @@ public class OutgoingTextMessage extends TextMessage implements ReplyXMLFormat, 
         xml.createChild("CreateTime", getCreateTime());
         xml.createChild("MsgType", getMsgType());
         xml.createChild("Content", getContent());
-        return xml.toReplyXMLString();
+        return xml.toXMLString();
     }
 
     @Override
