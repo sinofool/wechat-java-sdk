@@ -18,8 +18,6 @@ import net.sinofool.wechat.pay.dict.UnifedOrderRequestDict;
 import org.xml.sax.SAXException;
 
 public class WeChatPay {
-    // private static final String URL_UNIFIEDORDER =
-    // "https://api.mch.weixin.qq.com/pay/unifiedorder";
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WeChatPay.class);
 
     private final WeChatPayConfig config;
@@ -31,10 +29,6 @@ public class WeChatPay {
         if (null != eventHandler) {
             eventHandler.setWeChatPay(this);
         }
-    }
-
-    public WeChatPayConfig getConfig() {
-        return config;
     }
 
     public WeChatPayRequestData makeJSAPIPayment(int timestamp, String nonce, String prepayId) {
