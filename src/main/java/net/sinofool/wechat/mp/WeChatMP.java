@@ -255,7 +255,7 @@ public class WeChatMP {
     private boolean verify(final String signature, int timestamp, final String nonce) {
         String[] verify = new String[] { config.getToken(), String.valueOf(timestamp), nonce };
         Arrays.sort(verify);
-        return signature.equals(WeChatUtils.sha1Hex(verify[0] + verify[1] + verify[2]));
+        return signature.equals(WeChatUtils.sha1hex(verify[0] + verify[1] + verify[2]));
     }
 
     private boolean verify(String signature, int timestamp, String nonce, String msg) {
@@ -265,7 +265,7 @@ public class WeChatMP {
     private String sign(int timestamp, String nonce, String msg) {
         String[] verify = new String[] { config.getToken(), String.valueOf(timestamp), nonce, msg };
         Arrays.sort(verify);
-        return WeChatUtils.sha1Hex(verify[0] + verify[1] + verify[2] + verify[3]);
+        return WeChatUtils.sha1hex(verify[0] + verify[1] + verify[2] + verify[3]);
     }
 
     final String decryptMPMessage(final String encMessage) {
@@ -442,7 +442,7 @@ public class WeChatMP {
         String ticket = getJSAPITicket();
         String nonce = WeChatUtils.nonce();
         int timestamp = WeChatUtils.now();
-        String signature = WeChatUtils.sha1Hex("jsapi_ticket=" + ticket + "&noncestr=" + nonce + "&timestamp="
+        String signature = WeChatUtils.sha1hex("jsapi_ticket=" + ticket + "&noncestr=" + nonce + "&timestamp="
                 + timestamp + "&url=" + url);
 
         WeChatJSAPIConfig ret = new WeChatJSAPIConfig();

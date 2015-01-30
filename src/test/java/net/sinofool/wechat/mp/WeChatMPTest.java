@@ -28,7 +28,7 @@ public class WeChatMPTest {
 
     @Test
     public void testSha1() {
-        String inHouse = WeChatUtils.sha1Hex("Hello");
+        String inHouse = WeChatUtils.sha1hex("Hello");
         String expected = "f7ff9e8b7bb2e09b70935a5d785e0cc5d9d0abf0";
         assertEquals("SHA1 in WeChatUtils not correct", expected, inHouse);
     }

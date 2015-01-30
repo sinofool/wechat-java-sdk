@@ -22,38 +22,73 @@ public class WeChatUtils {
     }
 
     // Digest
-    private static final char[] DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
-            'f' };
+    private static final char[] DIGITS_LOWER = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
+            'e', 'f' };
+    private static final char[] DIGITS_UPPER = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D',
+            'E', 'F' };
 
-    private static String hex(byte[] input) {
+    private static String hex(byte[] input, boolean upperCase) {
         StringBuffer buf = new StringBuffer();
         for (int j = 0; j < input.length; j++) {
-            buf.append(DIGITS[(input[j] >> 4) & 0x0f]);
-            buf.append(DIGITS[input[j] & 0x0f]);
+            if (upperCase) {
+                buf.append(DIGITS_UPPER[(input[j] >> 4) & 0x0f]);
+                buf.append(DIGITS_UPPER[input[j] & 0x0f]);
+            } else {
+                buf.append(DIGITS_LOWER[(input[j] >> 4) & 0x0f]);
+                buf.append(DIGITS_LOWER[input[j] & 0x0f]);
+            }
         }
         return buf.toString();
     }
 
-    public static String sha1Hex(String input) {
+    /**
+     * Lower case sha1
+     * 
+     * @param input
+     * @return
+     */
+    public static String sha1hex(String input) {
         try {
             byte[] digest = MessageDigest.getInstance("SHA1").digest(input.getBytes(Charset.forName("utf-8")));
-            return hex(digest);
+            return hex(digest, false);
         } catch (NoSuchAlgorithmException e) {
             LOG.warn("Cannot find SHA1 digest algorithm", e);
             throw new WeChatException(e);
         }
     }
 
-    public static String md5Hex(String input) {
+    /**
+     * Lower case md5
+     * 
+     * @param input
+     * @return
+     */
+    public static String md5hex(String input) {
         try {
             byte[] digest = MessageDigest.getInstance("MD5").digest(input.getBytes(Charset.forName("utf-8")));
-            return hex(digest);
+            return hex(digest, false);
         } catch (NoSuchAlgorithmException e) {
             LOG.warn("Cannot find MD5 digest algorithm", e);
             throw new WeChatException(e);
         }
     }
-    
+
+    /**
+     * Upper case md5
+     * 
+     * @param input
+     * @return
+     */
+    public static String md5HEX(String input) {
+        try {
+            byte[] digest = MessageDigest.getInstance("MD5").digest(input.getBytes(Charset.forName("utf-8")));
+            return hex(digest, true);
+        } catch (NoSuchAlgorithmException e) {
+            LOG.warn("Cannot find MD5 digest algorithm", e);
+            throw new WeChatException(e);
+        }
+    }
+
     // Nonce generation
     private static final String NONCE = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 

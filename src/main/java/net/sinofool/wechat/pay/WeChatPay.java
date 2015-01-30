@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
-import java.util.Locale;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -53,7 +52,7 @@ public class WeChatPay {
         request.setString(UnifedOrderRequestDict.REQUIRED.NONCE_STR, WeChatUtils.nonce());
         request.setString(UnifedOrderRequestDict.REQUIRED.OUT_TRADE_NO, tradeNo);
         request.setString(UnifedOrderRequestDict.REQUIRED.SPBILL_CREATE_IP, ip);
-        request.setString(UnifedOrderRequestDict.REQUIRED.TOTAL_FEE, String.valueOf(fee * 100));
+        request.setString(UnifedOrderRequestDict.REQUIRED.TOTAL_FEE, String.valueOf((int) (fee * 100.0f)));
         request.setString(UnifedOrderRequestDict.REQUIRED.BODY, name);
         request.setString(UnifedOrderRequestDict.REQUIRED.NOTIFY_URL, notify);
         request.setString(UnifedOrderRequestDict.REQUIRED.TRADE_TYPE, "JSAPI");
@@ -106,9 +105,9 @@ public class WeChatPay {
     }
 
     private String signMD5(final List<StringPair> p) {
-        String param = join(p, false);
-        String sign = WeChatUtils.md5Hex(param + "&key=" + config.getPayKey()).toUpperCase(Locale.ENGLISH);
-        LOG.trace("Signing {}", param);
+        String param = join(p, false) + "&key=" + config.getPayKey();
+        String sign = WeChatUtils.md5HEX(param);
+        LOG.trace("Signing {}={}", param, sign);
         return sign;
     }
 
