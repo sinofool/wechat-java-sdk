@@ -44,6 +44,18 @@ public class WeChatPay {
         return signMD5(request.getSortedParameters());
     }
 
+    public boolean verifyJSAPIResponse(WeChatPayResponseData response) {
+        if (!"SUCCESS".equalsIgnoreCase(response.getString("return_code"))) {
+            return false;
+        }
+        if (!"SUCCESS".equalsIgnoreCase(response.getString("result_code"))) {
+            return false;
+        }
+        String signFromResponse = response.getString("sign");
+        String sign = signMD5(response.getSortedParameters("sign"));
+        return sign.equalsIgnoreCase(signFromResponse);
+    }
+
     public WeChatPayRequestData makeOrder(String tradeNo, String name, double fee, String ip, String notify,
             String openId) {
         WeChatPayRequestData request = new WeChatPayRequestData();
@@ -131,5 +143,4 @@ public class WeChatPay {
         }
         return buff.toString();
     }
-
 }

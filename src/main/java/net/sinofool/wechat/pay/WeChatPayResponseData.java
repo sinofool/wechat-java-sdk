@@ -15,6 +15,7 @@ import net.sinofool.wechat.base.GroupStringPair;
 import net.sinofool.wechat.base.StringPair;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -29,6 +30,9 @@ public class WeChatPayResponseData {
         NodeList childNodes = doc.getDocumentElement().getChildNodes();
         WeChatPayResponseData ret = new WeChatPayResponseData();
         for (int i = 0; i < childNodes.getLength(); ++i) {
+            if (childNodes.item(i).getNodeType() != Node.ELEMENT_NODE) {
+                continue;
+            }
             ret.data.add(childNodes.item(i).getNodeName(), childNodes.item(i).getTextContent());
         }
         return ret;
@@ -76,5 +80,4 @@ public class WeChatPayResponseData {
     public List<StringPair> getOrderedParameters(final String... skipKeys) {
         return data.getOrdered(skipKeys);
     }
-
 }
