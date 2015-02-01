@@ -55,9 +55,8 @@ public class WeChatPay {
         String sign = signMD5(response.getSortedParameters("sign"));
         return sign.equalsIgnoreCase(signFromResponse);
     }
-
-    public WeChatPayRequestData makeOrder(String tradeNo, String name, double fee, String ip, String notify,
-            String openId) {
+    
+    private WeChatPayRequestData makeOrder(String tradeNo, String name, double fee, String ip, String notify) {
         WeChatPayRequestData request = new WeChatPayRequestData();
         request.setString(UnifedOrderRequestDict.REQUIRED.APPID, config.getAppId());
         request.setString(UnifedOrderRequestDict.REQUIRED.MCH_ID, config.getMchId());
@@ -67,8 +66,22 @@ public class WeChatPay {
         request.setString(UnifedOrderRequestDict.REQUIRED.TOTAL_FEE, String.valueOf((int) (fee * 100.0f)));
         request.setString(UnifedOrderRequestDict.REQUIRED.BODY, name);
         request.setString(UnifedOrderRequestDict.REQUIRED.NOTIFY_URL, notify);
+        return request;
+    }
+
+    public WeChatPayRequestData makeOrderJSAPI(String tradeNo, String name, double fee, String ip, String notify,
+            String openId) {
+        WeChatPayRequestData request = makeOrder(tradeNo, name, fee, ip, notify);
         request.setString(UnifedOrderRequestDict.REQUIRED.TRADE_TYPE, "JSAPI");
         request.setString(UnifedOrderRequestDict.OPTIONAL.OPEN_ID, openId);
+        return request;
+    }
+
+    public WeChatPayRequestData makeOrderNATIVE(String tradeNo, String name, double fee, String ip, String notify,
+            String productId) {
+        WeChatPayRequestData request = makeOrder(tradeNo, name, fee, ip, notify);
+        request.setString(UnifedOrderRequestDict.REQUIRED.TRADE_TYPE, "NATIVE");
+        request.setString(UnifedOrderRequestDict.OPTIONAL.PRODUCT_ID, productId);
         return request;
     }
 
