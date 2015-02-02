@@ -1,6 +1,7 @@
 package net.sinofool.wechat.mp;
 
 import java.io.ByteArrayInputStream;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
@@ -30,6 +31,7 @@ import net.sinofool.wechat.mp.msg.PushJSONFormat;
 import net.sinofool.wechat.mp.msg.ReplyXMLFormat;
 import net.sinofool.wechat.thirdparty.org.json.JSONArray;
 import net.sinofool.wechat.thirdparty.org.json.JSONObject;
+import net.sinofool.wechat.thirdparty.org.json.JSONWriter;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -451,5 +453,23 @@ public class WeChatMP {
         ret.setTimestamp(timestamp);
         ret.setSignature(signature);
         return ret;
+    }
+
+    public String getShortURL(final String longUrl) {
+        StringWriter json = new StringWriter();
+        JSONWriter writer = new JSONWriter(json);
+        writer.object().key("action").value("long2short");
+        writer.key("long_url").value(longUrl);
+        writer.endObject();
+
+        String ret = httpClient.post("api.weixin.qq.com", 443, "https", "/cgi-bin/shorturl?access_token="
+                + getAccessToken(), json.toString());
+        JSONObject response = new JSONObject(ret);
+        int code = response.getInt("errcode");
+        if (code == 0) {
+            return response.getString("short_url");
+        } else {
+            return null;
+        }
     }
 }
