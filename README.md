@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/sinofool/wechat-java-sdk.png)](https://travis-ci.org/sinofool/wechat-java-sdk)
+
 微信开放平台Java SDK
 ===============
 因为实在是看不下去Demo代码，所以自己写了一个。欢迎Fork。
