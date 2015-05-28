@@ -55,7 +55,11 @@ public class WeChatPay {
         String sign = signMD5(response.getSortedParameters("sign"));
         return sign.equalsIgnoreCase(signFromResponse);
     }
-    
+
+    public String signRaiseAppRequest(WeChatPayRequestData request) {
+        return signMD5(request.getSortedParameters());
+    }
+
     private WeChatPayRequestData makeOrder(String tradeNo, String name, double fee, String ip, String notify) {
         WeChatPayRequestData request = new WeChatPayRequestData();
         request.setString(UnifedOrderRequestDict.REQUIRED.APPID, config.getAppId());
@@ -82,6 +86,23 @@ public class WeChatPay {
         WeChatPayRequestData request = makeOrder(tradeNo, name, fee, ip, notify);
         request.setString(UnifedOrderRequestDict.REQUIRED.TRADE_TYPE, "NATIVE");
         request.setString(UnifedOrderRequestDict.OPTIONAL.PRODUCT_ID, productId);
+        return request;
+    }
+
+    public WeChatPayRequestData makeOrderAPP(String tradeNo, String name, double fee, String ip, String notify) {
+        WeChatPayRequestData request = makeOrder(tradeNo, name, fee, ip, notify);
+        request.setString(UnifedOrderRequestDict.REQUIRED.TRADE_TYPE, "APP");
+        return request;
+    }
+
+    public WeChatPayRequestData makeRaiseAppRequest(String prepayId) {
+        WeChatPayRequestData request = new WeChatPayRequestData();
+        request.setString("appid", config.getAppId());
+        request.setString("partnerid", config.getMchId());
+        request.setString("prepayid", prepayId);
+        request.setString("package", "Sign=WXPay");
+        request.setString("noncestr", WeChatUtils.nonce());
+        request.setString("timestamp", String.valueOf(WeChatUtils.now()));
         return request;
     }
 
