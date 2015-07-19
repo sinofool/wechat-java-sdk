@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/sinofool/wechat-java-sdk.png)](https://travis-ci.org/sinofool/wechat-java-sdk)
+[![Coverage Status](https://coveralls.io/repos/sinofool/wechat-java-sdk/badge.svg?branch=master&service=github)](https://coveralls.io/github/sinofool/wechat-java-sdk?branch=master)
 
 微信开放平台Java SDK
 ===============
