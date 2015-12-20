@@ -39,6 +39,7 @@ public class WeChatApp {
     }
 
     private WeChatUserInfo parseWeChatUser(String ret) {
+        LOG.debug("Parsing WeChatUser {}", ret);
         WeChatUserInfo user = new WeChatUserInfo();
         JSONObject json = new JSONObject(ret);
         user.setOpenId(WeChatUtils.getJSONString(json, "openid"));
