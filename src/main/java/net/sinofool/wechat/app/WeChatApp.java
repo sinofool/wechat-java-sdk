@@ -47,7 +47,7 @@ public class WeChatApp {
         access.setAccessToken(json.getString("access_token"));
         access.setExpiresIn(json.getInt("expires_in"));
         access.setRefreshToken(json.getString("refresh_token"));
-        access.setOpenid(json.getString("openid"));
+        access.setOpenId(json.getString("openid"));
         access.setScope(json.getString("scope"));
         return true;
     }
