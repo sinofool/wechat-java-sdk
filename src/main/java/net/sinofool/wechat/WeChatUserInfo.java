@@ -1,9 +1,33 @@
 package net.sinofool.wechat;
 
+import net.sinofool.wechat.mp.WeChatUtils;
+import net.sinofool.wechat.thirdparty.org.json.JSONArray;
+import net.sinofool.wechat.thirdparty.org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class WeChatUserInfo {
+    public static WeChatUserInfo valueOf(String ret) {
+        WeChatUserInfo user = new WeChatUserInfo();
+        JSONObject json = new JSONObject(ret);
+        user.setOpenId(WeChatUtils.getJSONString(json, "openid"));
+        user.setNickname(WeChatUtils.getJSONString(json, "nickname"));
+        user.setSex(WeChatUtils.getJSONInt(json, "sex"));
+        user.setProvince(WeChatUtils.getJSONString(json, "province"));
+        user.setCity(WeChatUtils.getJSONString(json, "city"));
+        user.setCountry(WeChatUtils.getJSONString(json, "country"));
+        user.setHeadimgurl(WeChatUtils.getJSONString(json, "headimgurl"));
+        JSONArray privs = WeChatUtils.getJSONArray(json, "privilege");
+        if (privs != null) {
+            for (int i = 0; i < privs.length(); ++i) {
+                user.addPrivilege(privs.getString(i));
+            }
+        }
+        user.setUnionid(WeChatUtils.getJSONString(json, "unionid"));
+        return user;
+    }
+
     public static enum SEX {
         NONE(0), MALE(1), FEMALE(2);
         private int i;
