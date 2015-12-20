@@ -1,17 +1,15 @@
 package net.sinofool.wechat.mp.msg;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.Charset;
+import net.sinofool.wechat.WeChatException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-
-import net.sinofool.wechat.WeChatException;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.Charset;
 
 public class Messages {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(Messages.class);

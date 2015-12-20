@@ -1,11 +1,14 @@
 package net.sinofool.wechat.mp;
 
-import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.util.Arrays;
+import net.sinofool.wechat.WeChatException;
+import net.sinofool.wechat.WeChatJSAPIConfig;
+import net.sinofool.wechat.WeChatUserInfo;
+import net.sinofool.wechat.base.OneLevelOnlyXML;
+import net.sinofool.wechat.mp.msg.*;
+import net.sinofool.wechat.thirdparty.org.json.JSONObject;
+import net.sinofool.wechat.thirdparty.org.json.JSONWriter;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -13,28 +16,12 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-
-import net.sinofool.wechat.WeChatException;
-import net.sinofool.wechat.WeChatJSAPIConfig;
-import net.sinofool.wechat.WeChatUserInfo;
-import net.sinofool.wechat.base.OneLevelOnlyXML;
-import net.sinofool.wechat.mp.msg.IncomingClickEventMessage;
-import net.sinofool.wechat.mp.msg.IncomingLocationEventMessage;
-import net.sinofool.wechat.mp.msg.IncomingScanEventMessage;
-import net.sinofool.wechat.mp.msg.IncomingSubscribeEventMessage;
-import net.sinofool.wechat.mp.msg.IncomingSubscribeWithScanEventMessage;
-import net.sinofool.wechat.mp.msg.IncomingTextMessage;
-import net.sinofool.wechat.mp.msg.IncomingViewEventMessage;
-import net.sinofool.wechat.mp.msg.Message;
-import net.sinofool.wechat.mp.msg.Messages;
-import net.sinofool.wechat.mp.msg.PushJSONFormat;
-import net.sinofool.wechat.mp.msg.ReplyXMLFormat;
-import net.sinofool.wechat.thirdparty.org.json.JSONArray;
-import net.sinofool.wechat.thirdparty.org.json.JSONObject;
-import net.sinofool.wechat.thirdparty.org.json.JSONWriter;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import java.io.ByteArrayInputStream;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.util.Arrays;
 
 public class WeChatMP {
     public static final String WECHAT_MP_WEB_SCOPE_BASE = "snsapi_base";

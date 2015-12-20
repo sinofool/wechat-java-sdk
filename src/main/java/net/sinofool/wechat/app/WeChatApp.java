@@ -1,8 +1,6 @@
 package net.sinofool.wechat.app;
 
 import net.sinofool.wechat.WeChatUserInfo;
-import net.sinofool.wechat.mp.WeChatUtils;
-import net.sinofool.wechat.thirdparty.org.json.JSONArray;
 import net.sinofool.wechat.thirdparty.org.json.JSONObject;
 
 public class WeChatApp {

@@ -1,14 +1,14 @@
 package net.sinofool.wechat.mp;
 
-import java.nio.charset.Charset;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Random;
-
 import net.sinofool.wechat.WeChatException;
 import net.sinofool.wechat.thirdparty.org.json.JSONArray;
 import net.sinofool.wechat.thirdparty.org.json.JSONException;
 import net.sinofool.wechat.thirdparty.org.json.JSONObject;
+
+import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Random;
 
 public class WeChatUtils {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WeChatUtils.class);

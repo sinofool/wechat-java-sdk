@@ -1,9 +1,9 @@
 package net.sinofool.wechat.mp.msg;
 
-import java.io.StringWriter;
-
 import net.sinofool.wechat.base.OneLevelOnlyXML;
 import net.sinofool.wechat.thirdparty.org.json.JSONWriter;
+
+import java.io.StringWriter;
 
 public class OutgoingTextMessage extends TextMessage implements ReplyXMLFormat, PushJSONFormat {
 
