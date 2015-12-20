@@ -1,29 +1,9 @@
 package net.sinofool.wechat.app;
 
-import net.sinofool.wechat.WeChatException;
-import net.sinofool.wechat.WeChatJSAPIConfig;
 import net.sinofool.wechat.WeChatUserInfo;
-import net.sinofool.wechat.base.OneLevelOnlyXML;
-import net.sinofool.wechat.mp.*;
-import net.sinofool.wechat.mp.msg.*;
+import net.sinofool.wechat.mp.WeChatUtils;
 import net.sinofool.wechat.thirdparty.org.json.JSONArray;
 import net.sinofool.wechat.thirdparty.org.json.JSONObject;
-import net.sinofool.wechat.thirdparty.org.json.JSONWriter;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
-import java.util.Arrays;
 
 public class WeChatApp {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(WeChatApp.class);
