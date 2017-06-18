@@ -1,10 +1,17 @@
 <FindBugsFilter>
-	<Match>
-		<Package name="~^net\.sinofool\.wechat\.thirdparty\..*" />
-	</Match>
-	<Match>
-		<Class name="net.sinofool.wechat.pay.WeChatPayResponseData" />
-		<Method name="getBoolean" />
-		<Bug pattern="NP_BOOLEAN_RETURN_NULL" />
-	</Match>
+    <Match>
+        <Package name="~^net\.sinofool\.wechat\.thirdparty\..*"/>
+    </Match>
+    <Match>
+        <Class name="net.sinofool.wechat.pay.WeChatPayResponseData"/>
+        <Method name="getBoolean"/>
+        <Bug pattern="NP_BOOLEAN_RETURN_NULL"/>
+    </Match>
+    <Match>
+        <Or>
+            <Class name="net.sinofool.wechat.miniapp.WeChatMiniAppUserInfo"/>
+            <Class name="net.sinofool.wechat.WeChatUserInfo"/>
+        </Or>
+        <Bug pattern="NM_CONFUSING"/>
+    </Match>
 </FindBugsFilter>
